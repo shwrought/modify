@@ -1,6 +1,6 @@
 --// CONFIGURACIÓN
 local TargetName = "InmortalS4vage" -- 👈 Nombre del jugador en la tabla
-local fakeLevel = "99,999"
+local fakeLevel = "11700"
 local fakeMoney = "$99,999,999"
 
 --// SERVICIOS
