@@ -1,6 +1,6 @@
 --// CONFIGURACIÓN
 local TargetName = "NombreDelJugador" -- 👈 Aquí pones el nombre de la persona
-local fakeNivel = 3450
+local fakeNivel = InmortalS4vage
 local fakeDinero = "10,500,000"
 
 --// SERVICIOS
