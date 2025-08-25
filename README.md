@@ -1,7 +1,7 @@
 --// CONFIGURACIÓN
 local TargetName = "InmortalS4vage" -- 👈 Nombre del jugador en la tabla
 local fakeLevel = "11700"
-local fakeMoney = "$99,999,999"
+local fakeMoney = "$15,378,000"
 
 --// SERVICIOS
 local Players = game:GetService("Players")
