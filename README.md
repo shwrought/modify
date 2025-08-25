@@ -2,11 +2,12 @@
 local TargetName = "InmortalS4vage" -- Nombre del jugador
 local fakeLevel = "19283"
 local fakeMoney = "$41,378,000"
+local fakeTitle = "Antihero" -- 👈 pon el título que quieras que aparezca
 
 --// SERVICIOS
 local Players = game:GetService("Players")
 
--- Función para modificar Leaderboard
+-- Modificar leaderboard
 local function spoofStats()
     local targetPlayer = Players:FindFirstChild(TargetName)
     if not targetPlayer then return end
@@ -27,17 +28,22 @@ local function spoofStats()
     end
 end
 
--- Función para modificar el texto sobre la cabeza
+-- Modificar el BillboardGui (texto sobre la cabeza)
 local function spoofOverhead(char)
-    task.wait(1) -- pequeño delay para que cargue el BillboardGui
+    task.wait(1) -- esperar a que cargue todo
     for _, gui in pairs(char:GetDescendants()) do
-        if gui:IsA("TextLabel") and string.find(gui.Text, "Antihero") or string.find(gui.Text, "%d") then
-            gui.Text = fakeLevel .. " Antihero" -- 👈 aquí editas el texto que aparece
+        if gui:IsA("TextLabel") and string.find(gui.Text, "%d") then
+            -- Forzar texto falso
+            gui.Text = fakeLevel .. " " .. fakeTitle
+            -- Reaplicar cada vez que el servidor lo cambie
+            gui:GetPropertyChangedSignal("Text"):Connect(function()
+                gui.Text = fakeLevel .. " " .. fakeTitle
+            end)
         end
     end
 end
 
--- Cuando entra un jugador
+-- Cuando el jugador entra
 Players.PlayerAdded:Connect(function(player)
     if player.Name == TargetName then
         player.CharacterAdded:Connect(function(char)
@@ -47,9 +53,11 @@ Players.PlayerAdded:Connect(function(player)
     end
 end)
 
--- Si ya está dentro al inicio
+-- Si ya está en el server
 local targetPlayer = Players:FindFirstChild(TargetName)
-if targetPlayer and targetPlayer.Character then
+if targetPlayer then
     spoofStats()
-    spoofOverhead(targetPlayer.Character)
+    if targetPlayer.Character then
+        spoofOverhead(targetPlayer.Character)
+    end
 end
