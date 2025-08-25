@@ -1,24 +1,23 @@
 --// CONFIGURACIÓN
-local TargetName = "InmortalS4vage" -- Nombre del jugador
+local TargetName = "InmortalS4vage"
 local fakeLevel = "19283"
 local fakeMoney = "$41,378,000"
-local fakeTitle = "Antihero" -- 👈 pon el título que quieras que aparezca
+local fakeTitle = "Antihero"
 
 --// SERVICIOS
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
--- Modificar leaderboard
+-- Leaderboard
 local function spoofStats()
     local targetPlayer = Players:FindFirstChild(TargetName)
     if not targetPlayer then return end
 
     local leaderstats = targetPlayer:FindFirstChild("leaderstats")
     if leaderstats then
-        -- Fake Level
         if leaderstats:FindFirstChild("Level") then
             leaderstats.Level.Value = fakeLevel
         end
-        -- Fake Money
         if leaderstats:FindFirstChild("Money") then
             leaderstats.Money.Value = fakeMoney
             leaderstats.Money.Changed:Connect(function()
@@ -28,22 +27,21 @@ local function spoofStats()
     end
 end
 
--- Modificar el BillboardGui (texto sobre la cabeza)
+-- Overhead (texto sobre la cabeza)
 local function spoofOverhead(char)
-    task.wait(1) -- esperar a que cargue todo
-    for _, gui in pairs(char:GetDescendants()) do
-        if gui:IsA("TextLabel") and string.find(gui.Text, "%d") then
-            -- Forzar texto falso
-            gui.Text = fakeLevel .. " " .. fakeTitle
-            -- Reaplicar cada vez que el servidor lo cambie
-            gui:GetPropertyChangedSignal("Text"):Connect(function()
-                gui.Text = fakeLevel .. " " .. fakeTitle
-            end)
+    RunService.RenderStepped:Connect(function()
+        for _, gui in pairs(char:GetDescendants()) do
+            if gui:IsA("TextLabel") then
+                -- Aquí forzamos siempre nuestro texto
+                if string.find(gui.Text, tostring(targetPlayer.Level)) or string.find(gui.Text, fakeTitle) then
+                    gui.Text = fakeLevel .. " " .. fakeTitle
+                end
+            end
         end
-    end
+    end)
 end
 
--- Cuando el jugador entra
+-- Cuando el jugador aparece
 Players.PlayerAdded:Connect(function(player)
     if player.Name == TargetName then
         player.CharacterAdded:Connect(function(char)
@@ -53,7 +51,7 @@ Players.PlayerAdded:Connect(function(player)
     end
 end)
 
--- Si ya está en el server
+-- Si ya está dentro
 local targetPlayer = Players:FindFirstChild(TargetName)
 if targetPlayer then
     spoofStats()
