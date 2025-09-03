@@ -1,7 +1,7 @@
 --// CONFIGURACIÓN
 local TargetName = "KAMILYRR14"
 local fakeLevel = "19283"
-local fakeMoney = "$41,378,000"
+local fakeMoney = "$9,378,000"
 local fakeTitle = "Antihero"
 
 --// SERVICIOS
