@@ -1,61 +1,37 @@
 --// CONFIGURACIÓN
 local TargetName = "KAMILYRR14"
-local fakeLevel = "19283"
-local fakeMoney = "$9,378,000"
-local fakeTitle = "Antihero"
+local fakeLevel = "5146"
+local fakeMoney = "$7,378,000"
 
 --// SERVICIOS
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 
--- Leaderboard
-local function spoofStats()
-    local targetPlayer = Players:FindFirstChild(TargetName)
-    if not targetPlayer then return end
+-- Función para modificar directamente la UI del leaderboard
+local function spoofUI()
+    local PlayerList = game:GetService("CoreGui"):WaitForChild("PlayerList") -- leaderboard UI
+    local children = PlayerList:GetDescendants()
 
-    local leaderstats = targetPlayer:FindFirstChild("leaderstats")
-    if leaderstats then
-        if leaderstats:FindFirstChild("Level") then
-            leaderstats.Level.Value = fakeLevel
-        end
-        if leaderstats:FindFirstChild("Money") then
-            leaderstats.Money.Value = fakeMoney
-            leaderstats.Money.Changed:Connect(function()
-                leaderstats.Money.Value = fakeMoney
-            end)
-        end
-    end
-end
-
--- Overhead (texto sobre la cabeza)
-local function spoofOverhead(char)
-    RunService.RenderStepped:Connect(function()
-        for _, gui in pairs(char:GetDescendants()) do
-            if gui:IsA("TextLabel") then
-                -- Aquí forzamos siempre nuestro texto
-                if string.find(gui.Text, tostring(targetPlayer.Level)) or string.find(gui.Text, fakeTitle) then
-                    gui.Text = fakeLevel .. " " .. fakeTitle
+    for _, obj in pairs(children) do
+        if obj:IsA("TextLabel") and string.find(obj.Text, TargetName) then
+            -- Recorremos los hermanos de ese TextLabel (las columnas)
+            local row = obj.Parent.Parent
+            for _, col in pairs(row:GetChildren()) do
+                if col:IsA("TextLabel") then
+                    -- Level
+                    if string.find(col.Text, "%d") and string.len(col.Text) < 6 then
+                        col.Text = fakeLevel
+                    end
+                    -- Money
+                    if string.find(col.Text, "%$") or string.find(col.Text, "%d") then
+                        col.Text = fakeMoney
+                    end
                 end
             end
         end
-    end)
+    end
 end
 
--- Cuando el jugador aparece
-Players.PlayerAdded:Connect(function(player)
-    if player.Name == TargetName then
-        player.CharacterAdded:Connect(function(char)
-            spoofStats()
-            spoofOverhead(char)
-        end)
-    end
-end)
-
--- Si ya está dentro
-local targetPlayer = Players:FindFirstChild(TargetName)
-if targetPlayer then
-    spoofStats()
-    if targetPlayer.Character then
-        spoofOverhead(targetPlayer.Character)
-    end
+-- Reaplicar cada pocos segundos para que no se resetee
+while task.wait(2) do
+    spoofUI()
 end
