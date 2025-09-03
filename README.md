@@ -1,5 +1,5 @@
 --// CONFIGURACIÓN
-local TargetName = "InmortalS4vage"
+local TargetName = "KAMILYRR14"
 local fakeLevel = "19283"
 local fakeMoney = "$41,378,000"
 local fakeTitle = "Antihero"
