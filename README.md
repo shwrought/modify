@@ -1,7 +1,7 @@
 --// CONFIGURACIÓN (agrega los jugadores que quieras)
 local Config = {
     {
-        Name = "xDeMonzx_x",
+        Name = "inmortalS4vage",
         Level = "5614",
         Money = "$4,936,318",
         Title = "Antihero"
