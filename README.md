@@ -2,7 +2,7 @@
 local Config = {
     {
         Name = "xDeMonzx_x", -- tu nombre o jugador
-        Level = "5672",
+        Level = "1703",
         Money = "$4,936,318"
     }
 }
