@@ -8,8 +8,8 @@ local Config = {
     },
     {
         Name = "xDeMonzx_x", -- tu nick por ejemplo
-        Level = "9372",
-        Money = "$13,618,140",
+        Level = "5672",
+        Money = "$4,618,140",
         Title = "God"
     }
 }
