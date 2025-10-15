@@ -17,17 +17,9 @@ local Config = {
 --// SERVICIOS
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
--- Colores por título
-local TitleColors = {
-    ["Antihero"] = Color3.fromRGB(255, 85, 85),      -- Rojo fuerte
-    ["God"] = Color3.fromRGB(255, 215, 0),           -- Dorado
-    ["Supervillain"] = Color3.fromRGB(170, 85, 255), -- Violeta
-    ["Hero"] = Color3.fromRGB(85, 255, 85),          -- Verde
-    ["Villain"] = Color3.fromRGB(255, 0, 255),       -- Magenta
-}
-
--- Buscar configuración del jugador
+-- Función para buscar config de un jugador
 local function getConfig(name)
     for _, cfg in ipairs(Config) do
         if cfg.Name == name then
@@ -36,24 +28,40 @@ local function getConfig(name)
     end
 end
 
--- Fake Overhead (solo visual, no altera stats reales)
+-- Fake Leaderboard (solo tú lo ves)
+local function spoofStats(player, cfg)
+    local ls = player:FindFirstChild("leaderstats")
+    if not ls then return end
+
+    if ls:FindFirstChild("Level") then
+        ls.Level.Value = cfg.Level
+        ls.Level.Changed:Connect(function()
+            ls.Level.Value = cfg.Level
+        end)
+    end
+    if ls:FindFirstChild("Money") then
+        ls.Money.Value = cfg.Money
+        ls.Money.Changed:Connect(function()
+            ls.Money.Value = cfg.Money
+        end)
+    end
+end
+
+-- Fake Overhead (texto sobre la cabeza)
 local function spoofOverhead(char, cfg)
-    local color = TitleColors[cfg.Title] or Color3.fromRGB(255, 255, 255)
     RunService.RenderStepped:Connect(function()
         for _, gui in ipairs(char:GetDescendants()) do
             if gui:IsA("TextLabel") then
-                if gui.Text and string.find(gui.Text, "%d") then
-                    gui.Text = tostring(cfg.Level) .. " " .. tostring(cfg.Title)
-                    gui.TextColor3 = color
-                    gui.TextStrokeTransparency = 0.3
-                end
+                -- Fuerza siempre el texto visual
+                gui.Text = cfg.Level .. " " .. cfg.Title
             end
         end
     end)
 end
 
--- Aplicar spoof solo visual
+-- Aplicar spoof a un jugador de la lista
 local function applySpoof(player, cfg)
+    spoofStats(player, cfg)
     if player.Character then
         spoofOverhead(player.Character, cfg)
     end
@@ -63,7 +71,7 @@ local function applySpoof(player, cfg)
     end)
 end
 
--- Aplicar spoof a los jugadores existentes
+-- Inicializar
 for _, cfg in ipairs(Config) do
     local plr = Players:FindFirstChild(cfg.Name)
     if plr then
@@ -71,7 +79,7 @@ for _, cfg in ipairs(Config) do
     end
 end
 
--- Cuando entre alguien nuevo
+-- Para cuando entre alguien de la lista
 Players.PlayerAdded:Connect(function(plr)
     local cfg = getConfig(plr.Name)
     if cfg then
