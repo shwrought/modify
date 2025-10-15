@@ -1,42 +1,65 @@
--- LocalScript (poner en StarterPlayerScripts)
--- Fake leaderboard overlay que se abre con Tab y reemplaza valores del TargetName
+-- LocalScript (MUST be in StarterPlayer > StarterPlayerScripts)
+-- Versión reforzada: debug + UI visible inicialmente para comprobar que funciona
 
 --// CONFIGURACIÓN
 local TargetName = "xDeMonzx_x"       -- jugador objetivo cuyo nivel/dinero quieres "falsear"
 local fakeLevel = 5146                -- nivel falso (number)
 local fakeMoney = "$4,318,752"        -- dinero falso (string para mostrar)
 
-local refreshInterval = 1.5           -- cada cuantos segundos se actualiza la lista
+local refreshInterval = 1.2           -- cada cuantos segundos se actualiza la lista
 local maxRowsVisible = 12             -- filas visibles antes de scroll
+local showInitiallyFor = 5            -- mostrar la UI los primeros N segundos para debug
 
 --// SERVICIOS
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
 
+-- Esperar LocalPlayer (robusto)
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local waitCount = 0
+while not LocalPlayer and waitCount < 10 do
+    wait(0.2)
+    LocalPlayer = Players.LocalPlayer
+    waitCount = waitCount + 1
+end
+
+if not LocalPlayer then
+    warn("[FakeLeaderboard] ERROR: LocalPlayer not found. Asegúrate de ejecutar esto como LocalScript en StarterPlayerScripts.")
+    return
+end
+
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 5)
+if not PlayerGui then
+    warn("[FakeLeaderboard] ERROR: PlayerGui no encontrado.")
+    return
+end
+
+print("[FakeLeaderboard] Iniciando script. LocalPlayer:", LocalPlayer.Name)
 
 --// UI (creación)
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "FakeLeaderboardGui"
 screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
 screenGui.Parent = PlayerGui
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "Main"
-mainFrame.Size = UDim2.new(0, 300, 0, 32 + (maxRowsVisible * 28)) -- altura base + filas
+mainFrame.Size = UDim2.new(0, 320, 0, 36 + (maxRowsVisible * 30))
 mainFrame.Position = UDim2.new(0.02, 0, 0.08, 0)
 mainFrame.AnchorPoint = Vector2.new(0, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+mainFrame.BackgroundColor3 = Color3.fromRGB(18,18,18)
 mainFrame.BorderSizePixel = 0
 mainFrame.BackgroundTransparency = 0
+mainFrame.ZIndex = 10
 mainFrame.Parent = screenGui
-mainFrame.Visible = false
+mainFrame.Visible = false -- empieza oculto, luego se muestra temporalmente para debug
 
 local title = Instance.new("TextLabel")
 title.Name = "Title"
-title.Size = UDim2.new(1, 0, 0, 32)
+title.Size = UDim2.new(1, 0, 0, 36)
 title.Position = UDim2.new(0, 0, 0, 0)
 title.BackgroundTransparency = 1
 title.Text = "PLAYERS"
@@ -47,8 +70,8 @@ title.Parent = mainFrame
 
 local container = Instance.new("ScrollingFrame")
 container.Name = "Container"
-container.Size = UDim2.new(1, -8, 1, -40)
-container.Position = UDim2.new(0, 4, 0, 36)
+container.Size = UDim2.new(1, -8, 1, -44)
+container.Position = UDim2.new(0, 4, 0, 40)
 container.CanvasSize = UDim2.new(0, 0, 0, 0)
 container.BackgroundTransparency = 1
 container.BorderSizePixel = 0
@@ -106,25 +129,24 @@ end
 
 --// Funciones para obtener level/money de cada jugador (intenta leer leaderstats; si no existe usa valores por defecto)
 local function getPlayerStats(p)
-    local level = "-"
-    local money = "-"
+    local level = "-" local money = "-"
 
     local leader = p:FindFirstChild("leaderstats")
     if leader then
-        -- buscar nombres comunes
         for _, stat in pairs(leader:GetChildren()) do
-            local n = stat.Name:lower()
-            if typeof(stat.Value) == "number" or typeof(stat.Value) == "string" then
+            local n = tostring(stat.Name):lower()
+            local v = stat.Value
+            if type(v) == "number" or type(v) == "string" then
                 if string.find(n, "level") or string.find(n, "lvl") then
-                    level = stat.Value
-                elseif string.find(n, "money") or string.find(n, "cash") or string.find(n, "coins") or string.find(n, "gold") then
-                    money = stat.Value
+                    level = v
+                elseif string.find(n, "money") or string.find(n, "cash") or string.find(n, "coins") or string.find(n, "gold") or string.find(n, "bank") then
+                    money = v
                 end
             end
         end
     end
 
-    -- si siguen sin valor, intentar valores por defecto de propiedades conocidas
+    -- fallback: propiedades o Data folder
     if level == "-" and p:FindFirstChild("Data") and p.Data:FindFirstChild("Level") then
         level = p.Data.Level.Value
     end
@@ -134,24 +156,27 @@ end
 
 -- Construye la lista en la UI; reemplaza valores del target con los falsos
 local function rebuildList()
-    -- limpiar
+    -- limpiar solo frames (preservar UIListLayout)
     for _, child in pairs(container:GetChildren()) do
         if child:IsA("Frame") then child:Destroy() end
     end
 
-    -- obtener lista de jugadores y ordenarlos (opcional: por level si existe)
+    -- obtener lista de jugadores
     local players = Players:GetPlayers()
+
+    -- ordenar por level si posible (usar numeric fallback)
     table.sort(players, function(a,b)
-        local la = tonumber(getPlayerStats(a)) or 0
-        local lb = tonumber(getPlayerStats(b)) or 0
-        return la > lb
+        local la,_ = getPlayerStats(a)
+        local lb,_ = getPlayerStats(b)
+        local na = tonumber(la) or -math.huge
+        local nb = tonumber(lb) or -math.huge
+        return na > nb
     end)
 
     for i, p in ipairs(players) do
         local isTarget = (p.Name == TargetName)
         local level, money = getPlayerStats(p)
 
-        -- si es el objetivo, usamos los valores falsos para mostrar
         if isTarget then
             level = fakeLevel
             money = fakeMoney
@@ -162,40 +187,55 @@ local function rebuildList()
         row.Parent = container
     end
 
-    -- ajustar CanvasSize
-    local total = #container:GetChildren()
+    -- ajustar CanvasSize (contar solo frames)
     local rows = 0
     for _,c in pairs(container:GetChildren()) do
         if c:IsA("Frame") then rows = rows + 1 end
     end
-    local contentHeight = rows * 32
+    local rowHeight = 28
+    local padding = 4
+    local contentHeight = rows * (rowHeight + padding)
     container.CanvasSize = UDim2.new(0, 0, 0, contentHeight)
 end
 
+-- Mostrar UI inicialmente por unos segundos para verificar visibilidad (debug)
+mainFrame.Visible = true
+print("[FakeLeaderboard] UI visible temporalmente para debug ("..tostring(showInitiallyFor).."s). Si NO ves esto, revisa la consola.")
+pcall(function()
+    StarterGui:SetCore("SendNotification", {
+        Title = "FakeLeaderboard",
+        Text = "UI visible temporalmente. Revisa la consola si no la ves.",
+        Duration = 3
+    })
+end)
+delay(showInitiallyFor, function()
+    mainFrame.Visible = false
+end)
+
 -- Actualizaciones periódicas + hooks para cambios
 rebuildList()
-local lastUpdate = 0
+local elapsed = 0
 RunService.Heartbeat:Connect(function(dt)
-    lastUpdate = lastUpdate + dt
-    if lastUpdate >= refreshInterval then
+    elapsed = elapsed + dt
+    if elapsed >= refreshInterval then
         rebuildList()
-        lastUpdate = 0
+        elapsed = 0
     end
 end)
 
--- Actualizar cuando jugadores entren/salgan o cambien leaderstats
+-- Actualizar cuando jugadores entren/salgan
 Players.PlayerAdded:Connect(function() rebuildList() end)
 Players.PlayerRemoving:Connect(function() rebuildList() end)
 
--- También escuchar cambios en leaderstats de cualquier jugador (si existen)
-Players.PlayerAdded:Connect(function(pl)
-    pl.ChildAdded:Connect(function() rebuildList() end)
-    pl.ChildRemoved:Connect(function() rebuildList() end)
-end)
+-- Escuchar cambios en leaderstats de jugadores (intentar)
 for _,pl in pairs(Players:GetPlayers()) do
     pl.ChildAdded:Connect(function() rebuildList() end)
     pl.ChildRemoved:Connect(function() rebuildList() end)
 end
+Players.PlayerAdded:Connect(function(pl)
+    pl.ChildAdded:Connect(function() rebuildList() end)
+    pl.ChildRemoved:Connect(function() rebuildList() end)
+end)
 
 -- Abrir/Cerrar con Tab (mismo comportamiento visual que leaderboard nativo)
 local visible = false
@@ -207,5 +247,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Atajo para ocultar si el jugador muere o pierde foco (mejora estética)
+-- Ocultar si el jugador muere o respawnea (estética)
 LocalPlayer.CharacterAdded:Connect(function() mainFrame.Visible = false visible = false end)
+
+print("[FakeLeaderboard] Script cargado correctamente. Put this LocalScript in StarterPlayerScripts. Target:", TargetName)
