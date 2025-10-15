@@ -1,15 +1,15 @@
 --// CONFIGURACIÓN (agrega los jugadores que quieras)
 local Config = {
     {
-        Name = "inmortalS4vage",
-        Level = "5614",
+        Name = "xDeMonzx_x",
+        Level = "5672",
         Money = "$4,936,318",
         Title = "Antihero"
     },
     {
         Name = "xDeMonzx_x", -- tu nick por ejemplo
         Level = "5672",
-        Money = "$4,618,140",
+        Money = "$4,936,318",
         Title = "God"
     }
 }
