@@ -1,7 +1,7 @@
 --// CONFIGURACIÓN
-local TargetName = "KAMILYRR14"
+local TargetName = "habbathehut"
 local fakeLevel = "5146"
-local fakeMoney = "$7,378,000"
+local fakeMoney = "$4,318,752"
 
 --// SERVICIOS
 local Players = game:GetService("Players")
