@@ -1,7 +1,7 @@
---// CONFIGURACIÓN (jugadores falsos o modificados)
+--// CONFIGURACIÓN
 local Config = {
     {
-        Name = "xDeMonzx_x",
+        Name = "xDeMonzx_x", -- tu nick u otro jugador
         Level = "5672",
         Money = "$4,936,318",
         Title = "God"
@@ -11,7 +11,6 @@ local Config = {
 --// SERVICIOS
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
 
 -- Buscar configuración por nombre
 local function getConfig(name)
@@ -22,12 +21,11 @@ local function getConfig(name)
     end
 end
 
--- Forzar valores visuales constantemente
+-- Forzar stats visuales (leaderstats)
 local function spoofStatsPersistent(player, cfg)
     local ls = player:WaitForChild("leaderstats", 10)
     if not ls then return end
 
-    -- Reforzar los valores visuales constantemente
     RunService.RenderStepped:Connect(function()
         if ls:FindFirstChild("Level") then
             ls.Level.Value = cfg.Level
@@ -38,14 +36,30 @@ local function spoofStatsPersistent(player, cfg)
     end)
 end
 
--- Spoof del texto sobre la cabeza (Overhead)
+-- Colores predefinidos del sistema (puedes editarlos)
+local Colors = {
+    White = Color3.fromRGB(255, 255, 255),
+    Celeste = Color3.fromRGB(100, 200, 255)
+}
+
+-- Spoof del texto sobre la cabeza (limpio y sin distorsión)
 local function spoofOverheadPersistent(player, cfg)
     RunService.RenderStepped:Connect(function()
-        if player.Character then
-            for _, gui in ipairs(player.Character:GetDescendants()) do
-                if gui:IsA("TextLabel") then
-                    gui.Text = cfg.Level .. " " .. cfg.Title
-                end
+        if not player.Character then return end
+        for _, gui in ipairs(player.Character:GetDescendants()) do
+            if gui:IsA("TextLabel") and gui.Text ~= "" then
+                -- Limpia el texto y formato original
+                gui.RichText = true
+                gui.TextScaled = true
+                gui.TextWrapped = false
+                gui.TextStrokeTransparency = 0.1
+
+                -- Texto combinado: nivel blanco + rango celeste
+                gui.Text = string.format(
+                    "<font color='rgb(255,255,255)'>%s</font>  <font color='rgb(100,200,255)'>%s</font>",
+                    cfg.Level,
+                    cfg.Title
+                )
             end
         end
     end)
@@ -62,7 +76,7 @@ local function applySpoof(player, cfg)
     end)
 end
 
--- Inicializar para los jugadores configurados
+-- Inicializar para jugadores configurados
 for _, cfg in ipairs(Config) do
     local plr = Players:FindFirstChild(cfg.Name)
     if plr then
@@ -70,7 +84,7 @@ for _, cfg in ipairs(Config) do
     end
 end
 
--- Si entra alguien con nombre en la lista
+-- Aplicar si entra alguien nuevo de la lista
 Players.PlayerAdded:Connect(function(plr)
     local cfg = getConfig(plr.Name)
     if cfg then
