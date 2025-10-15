@@ -1,37 +1,33 @@
 --// CONFIGURACIÓN
 local TargetName = "xDeMonzx_x"
-local fakeLevel = "5146"
-local fakeMoney = "$4,318,752"
+local fakeLevel = 5146
+local fakeMoney = 4318752
 
 --// SERVICIOS
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Función para modificar directamente la UI del leaderboard
-local function spoofUI()
-    local PlayerList = game:GetService("CoreGui"):WaitForChild("PlayerList") -- leaderboard UI
-    local children = PlayerList:GetDescendants()
+-- Función para modificar los leaderstats del jugador objetivo (solo visual)
+local function spoofStats()
+    local target = Players:FindFirstChild(TargetName)
+    if not target then return end
 
-    for _, obj in pairs(children) do
-        if obj:IsA("TextLabel") and string.find(obj.Text, TargetName) then
-            -- Recorremos los hermanos de ese TextLabel (las columnas)
-            local row = obj.Parent.Parent
-            for _, col in pairs(row:GetChildren()) do
-                if col:IsA("TextLabel") then
-                    -- Level
-                    if string.find(col.Text, "%d") and string.len(col.Text) < 6 then
-                        col.Text = fakeLevel
-                    end
-                    -- Money
-                    if string.find(col.Text, "%$") or string.find(col.Text, "%d") then
-                        col.Text = fakeMoney
-                    end
-                end
+    local leaderstats = target:FindFirstChild("leaderstats")
+    if not leaderstats then return end
+
+    -- Recorremos las stats
+    for _, stat in pairs(leaderstats:GetChildren()) do
+        if stat:IsA("IntValue") or stat:IsA("NumberValue") or stat:IsA("StringValue") then
+            if string.find(stat.Name:lower(), "level") then
+                stat.Value = fakeLevel
+            elseif string.find(stat.Name:lower(), "money") or string.find(stat.Name:lower(), "cash") then
+                stat.Value = fakeMoney
             end
         end
     end
 end
 
--- Reaplicar cada pocos segundos para que no se resetee
+-- Reaplicar cada pocos segundos
 while task.wait(2) do
-    spoofUI()
+    spoofStats()
 end
