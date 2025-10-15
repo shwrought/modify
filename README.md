@@ -3,8 +3,7 @@ local Config = {
     {
         Name = "xDeMonzx_x", -- tu nombre o jugador
         Level = "5672",
-        Money = "$4,936,318",
-        Title = "God"
+        Money = "$4,936,318"
     }
 }
 
@@ -21,7 +20,7 @@ local function getConfig(name)
     end
 end
 
--- Mantener valores visuales falsos
+-- Mantener los valores falsos en el leaderboard
 local function spoofStatsPersistent(player, cfg)
     local ls = player:WaitForChild("leaderstats", 10)
     if not ls then return end
@@ -36,59 +35,34 @@ local function spoofStatsPersistent(player, cfg)
     end)
 end
 
--- Colores predefinidos
-local COLORS = {
-    White = Color3.fromRGB(255, 255, 255),
-    Celeste = Color3.fromRGB(100, 200, 255)
-}
-
--- Spoof del texto sobre la cabeza (separado correctamente)
-local function spoofOverheadPersistent(player, cfg)
+-- Solo cambia el nivel sobre la cabeza (en blanco)
+local function spoofLevelOverhead(player, cfg)
     local function applyToCharacter(char)
-        -- Buscar BillboardGuis existentes
         for _, billboard in ipairs(char:GetChildren()) do
             if billboard:IsA("BillboardGui") then
-                local levelLabel, titleLabel
+                for _, label in ipairs(billboard:GetDescendants()) do
+                    if label:IsA("TextLabel") then
+                        local txt = label.Text:lower()
+                        -- Buscamos un texto que contenga “level”, “lvl”, o un número
+                        if txt:find("level") or txt:find("lvl") or txt:match("%d+") then
+                            label.RichText = true
+                            label.TextScaled = true
+                            label.TextStrokeTransparency = 0.1
 
-                -- Buscar labels
-                for _, lbl in ipairs(billboard:GetDescendants()) do
-                    if lbl:IsA("TextLabel") then
-                        local txt = lbl.Text:lower()
-                        if txt:find("level") or txt:find(cfg.Level:lower()) then
-                            levelLabel = lbl
-                        elseif txt:find("god") or txt:find(cfg.Title:lower()) then
-                            titleLabel = lbl
+                            RunService.RenderStepped:Connect(function()
+                                label.Text = string.format("<font color='rgb(255,255,255)'>%s</font>", cfg.Level)
+                            end)
                         end
                     end
-                end
-
-                -- Crear o actualizar el label de nivel
-                if levelLabel then
-                    levelLabel.RichText = true
-                    levelLabel.TextScaled = true
-                    levelLabel.TextStrokeTransparency = 0.1
-                    RunService.RenderStepped:Connect(function()
-                        levelLabel.Text = string.format("<font color='rgb(255,255,255)'>%s</font>", cfg.Level)
-                    end)
-                end
-
-                -- Crear o actualizar el label del título
-                if titleLabel then
-                    titleLabel.RichText = true
-                    titleLabel.TextScaled = true
-                    titleLabel.TextStrokeTransparency = 0.1
-                    RunService.RenderStepped:Connect(function()
-                        titleLabel.Text = string.format("<font color='rgb(100,200,255)'>%s</font>", cfg.Title)
-                    end)
                 end
             end
         end
 
-        -- Si el Billboard aparece más tarde
+        -- Si aparece más tarde el BillboardGui
         char.ChildAdded:Connect(function(child)
             if child:IsA("BillboardGui") then
                 task.wait(0.5)
-                spoofOverheadPersistent(player, cfg)
+                spoofLevelOverhead(player, cfg)
             end
         end)
     end
@@ -99,13 +73,13 @@ local function spoofOverheadPersistent(player, cfg)
     player.CharacterAdded:Connect(applyToCharacter)
 end
 
--- Aplicar spoof completo
+-- Aplicar spoof
 local function applySpoof(player, cfg)
     spoofStatsPersistent(player, cfg)
-    spoofOverheadPersistent(player, cfg)
+    spoofLevelOverhead(player, cfg)
 end
 
--- Inicializar para jugadores configurados
+-- Inicializar
 for _, cfg in ipairs(Config) do
     local plr = Players:FindFirstChild(cfg.Name)
     if plr then
