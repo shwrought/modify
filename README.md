@@ -1,33 +1,52 @@
 --// CONFIGURACIÓN
 local TargetName = "xDeMonzx_x"
-local fakeLevel = 5146
-local fakeMoney = 4318752
+local fakeLevel = "5146"
+local fakeMoney = "$4,318,752"
 
 --// SERVICIOS
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Función para modificar los leaderstats del jugador objetivo (solo visual)
-local function spoofStats()
-    local target = Players:FindFirstChild(TargetName)
-    if not target then return end
+--// CREAR INTERFAZ
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "FakeLeaderboard"
+ScreenGui.Parent = PlayerGui
 
-    local leaderstats = target:FindFirstChild("leaderstats")
-    if not leaderstats then return end
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 250, 0, 100)
+Frame.Position = UDim2.new(0.02, 0, 0.1, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Frame.BorderSizePixel = 0
+Frame.Parent = ScreenGui
 
-    -- Recorremos las stats
-    for _, stat in pairs(leaderstats:GetChildren()) do
-        if stat:IsA("IntValue") or stat:IsA("NumberValue") or stat:IsA("StringValue") then
-            if string.find(stat.Name:lower(), "level") then
-                stat.Value = fakeLevel
-            elseif string.find(stat.Name:lower(), "money") or string.find(stat.Name:lower(), "cash") then
-                stat.Value = fakeMoney
-            end
-        end
-    end
-end
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 25)
+Title.BackgroundTransparency = 1
+Title.Text = "Leaderboard (Fake)"
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 20
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Parent = Frame
 
--- Reaplicar cada pocos segundos
-while task.wait(2) do
-    spoofStats()
-end
+local NameLabel = Instance.new("TextLabel")
+NameLabel.Size = UDim2.new(1, -10, 0, 25)
+NameLabel.Position = UDim2.new(0, 5, 0, 35)
+NameLabel.BackgroundTransparency = 1
+NameLabel.Text = "👤 " .. TargetName
+NameLabel.Font = Enum.Font.SourceSans
+NameLabel.TextSize = 18
+NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+NameLabel.Parent = Frame
+
+local InfoLabel = Instance.new("TextLabel")
+InfoLabel.Size = UDim2.new(1, -10, 0, 25)
+InfoLabel.Position = UDim2.new(0, 5, 0, 65)
+InfoLabel.BackgroundTransparency = 1
+InfoLabel.Text = "Level: " .. fakeLevel .. " | Money: " .. fakeMoney
+InfoLabel.Font = Enum.Font.SourceSans
+InfoLabel.TextSize = 18
+InfoLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+InfoLabel.Parent = Frame
