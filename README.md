@@ -7,7 +7,7 @@ local Config = {
         Title = "Antihero"
     },
     {
-        Name = "gatita_amorr", -- tu nick por ejemplo
+        Name = "xDeMonzx_x", -- tu nick por ejemplo
         Level = "9372",
         Money = "$13,618,140",
         Title = "God"
