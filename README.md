@@ -1,9 +1,9 @@
 --// CONFIGURACIÓN
 local Config = {
     {
-        Name = "habbathehut", -- tu nombre o jugador
-        Level = "5672",
-        Money = "$4,936,318"
+        Name = "ooityu", -- tu nombre o jugador
+        Level = "15,700",
+        Money = "$16,116,320"
     }
 }
 
