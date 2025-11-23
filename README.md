@@ -2,7 +2,7 @@
 local Config = {
     {
         Name = "ooityu", -- tu nombre o jugador
-        Level = "15,700",
+        Level = "15.700",
         Money = "$16,116,320"
     }
 }
