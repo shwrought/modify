@@ -2,8 +2,8 @@
 local Config = {
     {
         Name = "ooityu", -- tu nombre o jugador
-        Level = "15.700",
-        Money = "$16,116,320"
+        Level = 15987,   -- 🔥 AHORA ES NÚMERO VALIDO
+        Money = "$16,380,744"
     }
 }
 
@@ -26,11 +26,14 @@ local function spoofStatsPersistent(player, cfg)
     if not ls then return end
 
     RunService.RenderStepped:Connect(function()
+        -- Cambiar solo el valor numérico del Level
         if ls:FindFirstChild("Level") then
-            ls.Level.Value = cfg.Level
+            ls.Level.Value = tonumber(cfg.Level)  -- 🔥 SIEMPRE SERÁ 15700
         end
+
+        -- Money puede seguir siendo texto
         if ls:FindFirstChild("Money") then
-            ls.Money.Value = cfg.Money
+            ls.Money.Value = tostring(cfg.Money)
         end
     end)
 end
@@ -43,14 +46,14 @@ local function spoofLevelOverhead(player, cfg)
                 for _, label in ipairs(billboard:GetDescendants()) do
                     if label:IsA("TextLabel") then
                         local txt = label.Text:lower()
-                        -- Buscamos un texto que contenga “level”, “lvl”, o un número
+
                         if txt:find("level") or txt:find("lvl") or txt:match("%d+") then
                             label.RichText = true
                             label.TextScaled = true
                             label.TextStrokeTransparency = 0.1
 
                             RunService.RenderStepped:Connect(function()
-                                label.Text = string.format("<font color='rgb(255,255,255)'>%s</font>", cfg.Level)
+                                label.Text = "<font color='rgb(255,255,255)'>"..cfg.Level.."</font>"
                             end)
                         end
                     end
@@ -58,7 +61,6 @@ local function spoofLevelOverhead(player, cfg)
             end
         end
 
-        -- Si aparece más tarde el BillboardGui
         char.ChildAdded:Connect(function(child)
             if child:IsA("BillboardGui") then
                 task.wait(0.5)
