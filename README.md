@@ -1,17 +1,14 @@
---// CONFIGURACIÓN
 local Config = {
     {
-        Name = "ooityu", -- tu nombre o jugador
-        Level = 16027,   -- 🔥 AHORA ES NÚMERO VALIDO
+        Name = "ooityu", 
+        Level = 16027,   
         Money = "$16,380,744"
     }
 }
 
---// SERVICIOS
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
--- Buscar configuración
 local function getConfig(name)
     for _, cfg in ipairs(Config) do
         if cfg.Name == name then
@@ -20,25 +17,23 @@ local function getConfig(name)
     end
 end
 
--- Mantener los valores falsos en el leaderboard
 local function spoofStatsPersistent(player, cfg)
     local ls = player:WaitForChild("leaderstats", 10)
     if not ls then return end
 
     RunService.RenderStepped:Connect(function()
-        -- Cambiar solo el valor numérico del Level
+        
         if ls:FindFirstChild("Level") then
-            ls.Level.Value = tonumber(cfg.Level)  -- 🔥 SIEMPRE SERÁ 15700
+            ls.Level.Value = tonumber(cfg.Level)  
         end
 
-        -- Money puede seguir siendo texto
+        
         if ls:FindFirstChild("Money") then
             ls.Money.Value = tostring(cfg.Money)
         end
     end)
 end
 
--- Solo cambia el nivel sobre la cabeza (en blanco)
 local function spoofLevelOverhead(player, cfg)
     local function applyToCharacter(char)
         for _, billboard in ipairs(char:GetChildren()) do
@@ -75,13 +70,11 @@ local function spoofLevelOverhead(player, cfg)
     player.CharacterAdded:Connect(applyToCharacter)
 end
 
--- Aplicar spoof
 local function applySpoof(player, cfg)
     spoofStatsPersistent(player, cfg)
     spoofLevelOverhead(player, cfg)
 end
 
--- Inicializar
 for _, cfg in ipairs(Config) do
     local plr = Players:FindFirstChild(cfg.Name)
     if plr then
